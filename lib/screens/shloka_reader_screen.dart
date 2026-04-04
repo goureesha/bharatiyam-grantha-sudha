@@ -393,6 +393,48 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+          ],
+
+          // ── Vyakhyana ──
+          if (shloka.kannadaVyakhyana != null) ...[
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.kSaffron.withOpacity(isDark ? 0.05 : 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.kSaffron.withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.menu_book, size: 16, color: AppTheme.kSaffron),
+                      const SizedBox(width: 6),
+                      Text(
+                        'ವ್ಯಾಖ್ಯಾನ / Commentary',
+                        style: TextStyle(
+                          color: AppTheme.kSaffron,
+                          fontSize: 11 * _fontScale,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  SelectableText(
+                    shloka.kannadaVyakhyana!,
+                    style: TextStyle(
+                      color: kText,
+                      fontSize: 14 * _fontScale,
+                      height: 1.8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
 
           const SizedBox(height: 24),
