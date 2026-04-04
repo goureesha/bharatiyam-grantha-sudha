@@ -52,6 +52,8 @@ class Shloka {
   final String devanagariText;   // Shloka in Devanagari script
   final String? kannadaMeaning;  // Meaning/translation in Kannada
   final String? englishMeaning;  // Optional English meaning
+  final String? hindiVyakhyana;  // Hindi commentary
+  final String? kannadaVyakhyana;// Kannada commentary
 
   const Shloka({
     required this.id,
@@ -60,6 +62,8 @@ class Shloka {
     required this.devanagariText,
     this.kannadaMeaning,
     this.englishMeaning,
+    this.hindiVyakhyana,
+    this.kannadaVyakhyana,
   });
 }
 
