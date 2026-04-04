@@ -7,6 +7,7 @@ class StorageService {
   static const String _themeKey = 'theme_mode'; // 'dark', 'light', 'system'
   static const String _scriptKey = 'script_mode'; // 'dual', 'kannada', 'devanagari'
   static const String _fontSizeKey = 'font_size'; // multiplier: 1.0, 1.2, 1.5, etc.
+  static const String _readModeKey = 'read_mode'; // 'swipe' or 'scroll'
 
   // ── Bookmarks ──
   static Future<Set<String>> getBookmarks() async {
@@ -82,5 +83,16 @@ class StorageService {
   static Future<void> setFontSize(double size) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_fontSizeKey, size);
+  }
+
+  // ── Read Mode ──
+  static Future<String> getReadMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_readModeKey) ?? 'swipe';
+  }
+
+  static Future<void> setReadMode(String mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_readModeKey, mode);
   }
 }

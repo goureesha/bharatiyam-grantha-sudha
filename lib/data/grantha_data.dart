@@ -189,5 +189,43 @@ final List<Grantha> allGranthas = [
         ],
       )
     ],
+  ),
+
+  // ════════════════════════════════════════════
+  // 7. BRUHAD JATAKA
+  // ════════════════════════════════════════════
+  Grantha(
+    id: 'bruhad_jataka',
+    kannadaName: 'ಬೃಹಜ್ಜಾತಕ',
+    devanagariName: 'बृहज्जातक',
+    englishName: 'Bruhad Jataka',
+    description: 'ವರಾಹಮಿಹಿರಾಚಾರ್ಯ ವಿರಚಿತ ಜ್ಯೋತಿಷ ಶಾಸ್ತ್ರದ ಶ್ರೇಷ್ಠ ಹಾಗೂ ಪ್ರಮುಖ ಗ್ರಂಥ.',
+    author: 'ವರಾಹಮಿಹಿರ',
+    category: 'ಶಾಸ್ತ್ರ',
+    icon: '✨',
+    shlokaCount: 20, // Chapter 1 Count
+    adhyayas: [
+      Adhyaya(
+        id: 'bj_ch1',
+        number: 1,
+        kannadaName: 'ರಾಶಿಶೀಲ ಪ್ರಕರಣ',
+        devanagariName: '',
+        englishName: 'Rashi Sheela Prakarana',
+        shlokas: [
+          Shloka(
+            id: 'bj_1_1',
+            number: 1,
+            kannadaText: 'ಮೂರ್ತಿತ್ವೇ ಪರಿಕಲ್ಪಿತಃ ಶಶಭೃತೋ ವರ್ತ್ಮಾಪುನರ್ಜನ್ಮನಾ-\nಮಾತ್ಮೇತ್ಯಾತ್ಮವಿದಾಂ ಕ್ರತುಶ್ಚ ಯಜತಾಂ ಭರ್ತಾಮರಜ್ಯೋತಿಷಾಂ |\nಲೋಕಾನಾಂ ಪ್ರಲಯೋದ್ಭವಸ್ಥಿತಿ ವಿಭುಶ್ಚಾನೇಕಧಾಯಃ ಶ್ರುತೌ\nವಾಚಂ ನಃ ಸದದಾತ್ವನೇಕ ಕಿರಣಸ್ತ್ರೈಲೋಕ್ಯದೀಪೋ ರವಿಃ || ೧ ||',
+            devanagariText: '',
+          ),
+          Shloka(
+             id: 'bj_1_2',
+             number: 2,
+             kannadaText: 'ತಾರಾಗ್ರಹೈಃ ಸಬಲಮೂರ್ತಿಭಿರಗ್ನಿಶುಕ್ರ-\nದೇವರ್ಷಿಭಿರ್ಗಜತುರಂಗಮಗೋದೃಷ್ಟಿಭಿಃ |\nಲಗ್ನೇ ಶುಭೈಃ ಶಶಿಗುರುರ್ಭಾರ್ಗವೈಶ್ಚತುರ್ಭಿಃ\nಸೌಮ್ಯಾಃ ಪುನರಪಿ ಸ್ಯುಃ ಸದಾ ಸುಶೋಭನಾಃ || ೨ ||\n(ಉದಾಹರಣೆಯ ಶ್ಲೋಕ, ಮುಂದಿನ ಶ್ಲೋಕಗಳನ್ನು ಸೇರಿಸಬಹುದು)',
+             devanagariText: '',
+          ),
+        ],
+      )
+    ],
   )
 ];

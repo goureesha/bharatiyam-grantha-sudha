@@ -29,6 +29,7 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
   int _currentPage = 0;
   Set<String> _bookmarks = {};
   String _scriptMode = 'dual'; // 'dual', 'kannada', 'devanagari'
+  String _readMode = 'swipe'; // 'swipe' or 'scroll'
   double _fontScale = 1.0;
 
   @override
@@ -42,10 +43,12 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
   Future<void> _loadPreferences() async {
     final bookmarks = await StorageService.getBookmarks();
     final script = await StorageService.getScriptMode();
+    final readMode = await StorageService.getReadMode();
     final fontSize = await StorageService.getFontSize();
     setState(() {
       _bookmarks = bookmarks;
       _scriptMode = script;
+      _readMode = readMode;
       _fontScale = fontSize;
     });
   }
@@ -129,6 +132,21 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
         ),
         centerTitle: true,
         actions: [
+          // Font Size
+          IconButton(
+            icon: Icon(Icons.text_fields, color: AppTheme.kSaffron, size: 22),
+            onPressed: () => _showFontSizeDialog(kCard, kText, kMuted),
+          ),
+          // Read mode toggle
+          IconButton(
+            icon: Icon(_readMode == 'swipe' ? Icons.swap_horiz : Icons.swap_vert, color: AppTheme.kSaffron, size: 24),
+            onPressed: () async {
+              final newMode = _readMode == 'swipe' ? 'scroll' : 'swipe';
+              await StorageService.setReadMode(newMode);
+              setState(() => _readMode = newMode);
+            },
+            tooltip: _readMode == 'swipe' ? 'ಸ್ವೈಪ್ ಮೋಡ್ (Scroll Mode ಗೆ ಬದಲಾಯಿಸಿ)' : 'ಸ್ಕ್ರಾಲ್ ಮೋಡ್ (Swipe Mode ಗೆ ಬದಲಾಯಿಸಿ)',
+          ),
           // Script toggle popup
           PopupMenuButton<String>(
             icon: Icon(Icons.translate, color: AppTheme.kSaffron, size: 22),
@@ -148,85 +166,93 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
       ),
       body: Column(
         children: [
-          // ── Shloka PageView ──
+          // ── Shloka View ──
           Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (i) => setState(() => _currentPage = i),
-              itemCount: shlokas.length,
-              itemBuilder: (context, index) {
-                final shloka = shlokas[index];
-                final isBookmarked = _bookmarks.contains(shloka.id);
-                return _buildShlokaPage(shloka, isBookmarked, isDark, kCard, kText, kMuted);
-              },
-            ),
+            child: _readMode == 'swipe'
+                ? PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (i) => setState(() => _currentPage = i),
+                    itemCount: shlokas.length,
+                    itemBuilder: (context, index) {
+                      final shloka = shlokas[index];
+                      final isBookmarked = _bookmarks.contains(shloka.id);
+                      return _buildShlokaPage(shloka, isBookmarked, isDark, kCard, kText, kMuted, isScrollMode: false);
+                    },
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 0),
+                    itemCount: shlokas.length,
+                    itemBuilder: (context, index) {
+                      final shloka = shlokas[index];
+                      final isBookmarked = _bookmarks.contains(shloka.id);
+                      return _buildShlokaPage(shloka, isBookmarked, isDark, kCard, kText, kMuted, isScrollMode: true);
+                    },
+                  ),
           ),
 
-          // ── Bottom Controls ──
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: kCard,
-              border: Border(top: BorderSide(color: isDark ? AppTheme.kDarkBorder : AppTheme.kLightBorder, width: 0.5)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Previous
-                IconButton(
-                  icon: Icon(Icons.chevron_left, color: _currentPage > 0 ? AppTheme.kSaffron : kMuted, size: 32),
-                  onPressed: _currentPage > 0
-                      ? () => _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)
-                      : null,
-                ),
-                // Font size
-                IconButton(
-                  icon: Icon(Icons.text_fields, color: AppTheme.kSaffron, size: 22),
-                  onPressed: () => _showFontSizeDialog(kCard, kText, kMuted),
-                ),
-                // Bookmark
-                IconButton(
-                  icon: Icon(
-                    _bookmarks.contains(shlokas[_currentPage].id) ? Icons.bookmark : Icons.bookmark_border,
-                    color: AppTheme.kSaffron,
-                    size: 24,
+          // ── Bottom Controls (Only in Swipe Mode) ──
+          if (_readMode == 'swipe')
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: kCard,
+                border: Border(top: BorderSide(color: isDark ? AppTheme.kDarkBorder : AppTheme.kLightBorder, width: 0.5)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Previous
+                  IconButton(
+                    icon: Icon(Icons.chevron_left, color: _currentPage > 0 ? AppTheme.kSaffron : kMuted, size: 32),
+                    onPressed: _currentPage > 0
+                        ? () => _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)
+                        : null,
                   ),
-                  onPressed: () => _toggleBookmark(shlokas[_currentPage].id),
-                ),
-                // Share
-                IconButton(
-                  icon: Icon(Icons.share, color: AppTheme.kSaffron, size: 22),
-                  onPressed: () => _shareShloka(shlokas[_currentPage]),
-                ),
-                // Copy
-                IconButton(
-                  icon: Icon(Icons.copy, color: AppTheme.kSaffron, size: 22),
-                  onPressed: () => _copyShloka(shlokas[_currentPage]),
-                ),
-                // Next
-                IconButton(
-                  icon: Icon(Icons.chevron_right, color: _currentPage < shlokas.length - 1 ? AppTheme.kSaffron : kMuted, size: 32),
-                  onPressed: _currentPage < shlokas.length - 1
-                      ? () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)
-                      : null,
-                ),
-              ],
+                  // Bookmark
+                  IconButton(
+                    icon: Icon(
+                      _bookmarks.contains(shlokas[_currentPage].id) ? Icons.bookmark : Icons.bookmark_border,
+                      color: AppTheme.kSaffron,
+                      size: 24,
+                    ),
+                    onPressed: () => _toggleBookmark(shlokas[_currentPage].id),
+                  ),
+                  // Share
+                  IconButton(
+                    icon: Icon(Icons.share, color: AppTheme.kSaffron, size: 22),
+                    onPressed: () => _shareShloka(shlokas[_currentPage]),
+                  ),
+                  // Copy
+                  IconButton(
+                    icon: Icon(Icons.copy, color: AppTheme.kSaffron, size: 22),
+                    onPressed: () => _copyShloka(shlokas[_currentPage]),
+                  ),
+                  // Next
+                  IconButton(
+                    icon: Icon(Icons.chevron_right, color: _currentPage < shlokas.length - 1 ? AppTheme.kSaffron : kMuted, size: 32),
+                    onPressed: _currentPage < shlokas.length - 1
+                        ? () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)
+                        : null,
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildShlokaPage(Shloka shloka, bool isBookmarked, bool isDark, Color kCard, Color kText, Color kMuted) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ── Shloka Number Badge ──
-          Center(
-            child: Container(
+  Widget _buildShlokaPage(Shloka shloka, bool isBookmarked, bool isDark, Color kCard, Color kText, Color kMuted, {bool isScrollMode = false}) {
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (isScrollMode && shloka.number > 1) const Divider(height: 48, thickness: 1),
+        
+        // ── Shloka Number Badge & Actions ──
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
                 color: AppTheme.kSaffron.withOpacity(0.15),
@@ -242,8 +268,25 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
+            if (isScrollMode) ...[
+              const Spacer(),
+              IconButton(
+                icon: Icon(Icons.share, size: 20, color: kMuted),
+                onPressed: () => _shareShloka(shloka),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 16),
+              IconButton(
+                icon: Icon(Icons.copy, size: 20, color: kMuted),
+                onPressed: () => _copyShloka(shloka),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 24),
 
           // ── Kannada Text ──
           if (_scriptMode == 'dual' || _scriptMode == 'kannada') ...[
@@ -301,7 +344,7 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
           ],
 
           // ── Devanagari Text ──
-          if (_scriptMode == 'dual' || _scriptMode == 'devanagari') ...[
+          if ((_scriptMode == 'dual' || _scriptMode == 'devanagari') && shloka.devanagariText.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -437,17 +480,29 @@ class _ShlokaReaderScreenState extends State<ShlokaReaderScreen> {
             const SizedBox(height: 8),
           ],
 
-          const SizedBox(height: 24),
-
-          // ── Page indicator dots ──
-          Center(
-            child: Text(
-              '← ಸ್ವೈಪ್ ಮಾಡಿ / Swipe →',
-              style: TextStyle(color: kMuted, fontSize: 11),
+          if (!isScrollMode) ...[
+            const SizedBox(height: 24),
+            // ── Page indicator dots ──
+            Center(
+              child: Text(
+                '← ಸ್ವೈಪ್ ಮಾಡಿ / Swipe →',
+                style: TextStyle(color: kMuted, fontSize: 11),
+              ),
             ),
-          ),
+          ],
         ],
-      ),
+      );
+
+    if (isScrollMode) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: content,
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: content,
     );
   }
 
